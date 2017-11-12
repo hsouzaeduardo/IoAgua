@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+    <head>
+          <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+          <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+          <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+          <script src="https://jtblin.github.io/angular-chart.js/node_modules/chart.js/dist/Chart.min.js"></script>
+          <script src="https://jtblin.github.io/angular-chart.js/dist/angular-chart.js"></script>
+
+    </head>
+
+<body>
+<title>Histórico do volume de litros da Cx Agua</title>
+<h1>Litros</h1>
+<div class="container">
+    <div ng-app="app" ng-controller="BarCtrl">
+        <!-- <canvas id="line" class="chart chart-line" chart-data="data"
+        chart-labels="labels" chart-series="series" chart-options="options"
+        chart-dataset-override="datasetOverride" chart-click="onClick">
+        </canvas> -->
+        <canvas id="bar" class="chart chart-bar"
+        chart-data="data" chart-labels="labels"> chart-series="series"
+      </canvas
+    </div>
+</div>
+<script>
+angular.module("app", ["chart.js"]).controller("BarCtrl", function ($scope,$http,$interval) {
+  $scope.name = "IO/Agua"
+//   $scope.series = ['Litros'];
+  $scope.series = ['Series A', 'Series B'];
+ 
+  $scope.getLiveChartData = function(){
+    
+    $http({
+        method: 'GET',
+        url: '/temp'
+       }).then(function successCallback(response) {
+            response.data.reverse();
+            for (x=0;x<response.data.length;x++) {
+                $scope.labels = [];
+                $scope.data = [];
+                var centimeter = parseInt(response.data[x].centimeter);
+                var total =(3.1456 * Math.pow(centimeter, 2) * 27.23) /1000
+                // var total = (parseFloat(centimeter) * 24) / 40;
+
+                $scope.data.push(total);
+                var data = new Date(response.data[x].time).toString();
+                $scope.labels.push(data.substr(16, 8));
+            }
+       });
+  };
+  $interval(function () {
+    $scope.getLiveChartData();
+  }, 5000);  
+  $scope.getLiveChartData();
+
+  $scope.datasetOverride = [{ yAxisID: 'y-axis-1' }, { yAxisID: 'y-axis-2' }];
+  $scope.options = {
+    scales: {
+      yAxes: [
+        {
+          id: 'y-axis-1',
+          type: 'linear',
+          display: true,
+          position: 'left'
+        },
+        {
+          id: 'y-axis-2',
+          type: 'linear',
+          display: true,
+          position: 'right'
+        }
+      ]
+    }
+  };
+
+//   $scope.datasetOverride = [{ 
+//         yAxisID: 'y-axis-1',
+//         borderWidth: 3,
+//         hoverBackgroundColor: "rgba(255,99,132,0.4)",
+//         hoverBorderColor: "rgba(255,99,132,1)"
+//       } ];
+//   $scope.options = {
+//     scales: {
+//       yAxes: [
+//         {
+//           id: 'y-axis-1',
+//           type: 'linear',
+//           display: true,
+//           position: 'left'
+//         }
+//       ]
+//     }
+//   };
+});
+
+              
+</script>
+
+</body>
+</html>
+
